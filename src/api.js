@@ -13,6 +13,11 @@ export async function reportItem(body) {
   return res.json();
 }
 
+export async function deleteNote(id) {
+  const res = await fetch(`${BASE}/notes/delete?id=${id}`, { method: 'DELETE' });
+  return res.json();
+}
+
 export async function getItems(type = '', category = '') {
   const params = new URLSearchParams();
   if (type) params.set('type', type);
