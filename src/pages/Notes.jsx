@@ -116,7 +116,7 @@ export default function Notes({ user }) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [activeNote, setActiveNote] = useState(null);
-  const [form, setForm] = useState({ title: '', subject: '', raw_text: '', uploader_name: user.displayName });
+  const [form, setForm] = useState({ title: '', subject: '', raw_text: '', uploader_name: user.email });
   const searchRef = useRef(null);
 
   const fetchNotes = async (q = query) => {
@@ -247,7 +247,7 @@ export default function Notes({ user }) {
           </div>
         ) : (
           notes.map((note) => (
-            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isOwn={note.uploader_name === user.displayName} />
+            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isOwn={note.uploader_name === user.email} />
           ))
         )}
       </div>
