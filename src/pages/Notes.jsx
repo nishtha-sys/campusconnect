@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { uploadNote, searchNotes, getAllNotes, countDownload } from '../api';
+import { uploadNote, searchNotes, getAllNotes, countDownload, deleteNote } from '../api';
 
 function SkeletonCard() {
   return (
@@ -155,6 +155,12 @@ export default function Notes({ user }) {
     setActiveNote(note);
   };
 
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this note?')) return;
+    await deleteNote(id);
+    fetchNotes('');
+  };
+
   return (
     <div>
       {activeNote && <NoteModal note={activeNote} onClose={() => setActiveNote(null)} />}
@@ -241,7 +247,7 @@ export default function Notes({ user }) {
           </div>
         ) : (
           notes.map((note) => (
-            <NoteCard key={note.id} note={note} onView={handleView} />
+            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isOwn={note.uploader_name === user.displayName} />
           ))
         )}
       </div>
