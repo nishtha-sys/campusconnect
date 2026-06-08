@@ -64,7 +64,7 @@ function NoteModal({ note, onClose }) {
   );
 }
 
-function NoteCard({ note, onView }) {
+function NoteCard({ note, onView, onDelete, isOwn }) {
   return (
     <div className="card group">
       <div className="flex items-start justify-between mb-3">
@@ -97,13 +97,25 @@ function NoteCard({ note, onView }) {
 
       <div className="flex items-center justify-between">
         <p className="text-white/30 text-xs">{note.uploader_name}</p>
-        <button onClick={() => onView(note)}
-          className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
-          style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(184,255,71,0.1)'; e.currentTarget.style.color = '#b8ff47'; e.currentTarget.style.borderColor = 'rgba(184,255,71,0.3)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
-          View Notes →
-        </button>
+        <div className="flex items-center gap-2">
+          {isOwn && (
+            <button
+              onClick={() => onDelete(note.id)}
+              className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+              style={{ background: 'rgba(255,60,60,0.08)', color: 'rgba(255,100,100,0.7)', border: '1px solid rgba(255,60,60,0.15)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,60,60,0.18)'; e.currentTarget.style.color = '#ff6464'; e.currentTarget.style.borderColor = 'rgba(255,60,60,0.4)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,60,60,0.08)'; e.currentTarget.style.color = 'rgba(255,100,100,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,60,60,0.15)'; }}>
+              🗑 Delete
+            </button>
+          )}
+          <button onClick={() => onView(note)}
+            className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+            style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(184,255,71,0.1)'; e.currentTarget.style.color = '#b8ff47'; e.currentTarget.style.borderColor = 'rgba(184,255,71,0.3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
+            View Notes →
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -116,7 +128,7 @@ export default function Notes({ user }) {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [activeNote, setActiveNote] = useState(null);
-  const [form, setForm] = useState({ title: '', subject: '', raw_text: '', uploader_name: user.displayName, uploader_email: user.email });
+  const [form, setForm] = useState({ title: '', subject: '', raw_text: '', uploader_name: user.displayName });
   const searchRef = useRef(null);
 
   const fetchNotes = async (q = query) => {
@@ -142,7 +154,7 @@ export default function Notes({ user }) {
     try {
       await uploadNote(form);
       setShowForm(false);
-      setForm({ title: '', subject: '', raw_text: '', uploader_name: user.displayName, uploader_email: user.email });
+      setForm({ title: '', subject: '', raw_text: '', uploader_name: user.displayName });
       fetchNotes('');
       setQuery('');
     } finally {
@@ -247,7 +259,7 @@ export default function Notes({ user }) {
           </div>
         ) : (
           notes.map((note) => (
-            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isOwn={note.uploader_email === user.email} />
+            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isOwn={note.uploader_name?.trim() === user.displayName?.trim()} />
           ))
         )}
       </div>
