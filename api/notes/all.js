@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   try {
     const db = getDb();
     const snap = await db.collection('notes').orderBy('created_at', 'desc').get();
-    const notes = snap.docs.map((d) => d.data());
+    const notes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     return res.status(200).json({ notes });
   } catch (err) {
     console.error(err);
