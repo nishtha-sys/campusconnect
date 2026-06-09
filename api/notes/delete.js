@@ -18,6 +18,8 @@ export default async function handler(req, res) {
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!idToken) return res.status(401).json({ error: 'Missing auth token' });
 
+    // Initialize Firebase Admin first, then verify token
+    const db = getDb();
     const decoded = await getAuth().verifyIdToken(idToken);
     if (decoded.email !== ADMIN_EMAIL) {
       return res.status(403).json({ error: 'Admin only' });
@@ -27,7 +29,6 @@ export default async function handler(req, res) {
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: 'Missing note id' });
 
-    const db = getDb();
     const docRef = db.collection('notes').doc(id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ error: 'Note not found' });

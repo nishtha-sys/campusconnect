@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { uploadNote, searchNotes, getAllNotes, countDownload, deleteNote } from '../api';
+import { getAuth } from 'firebase/auth';
 
 function SkeletonCard() {
   return (

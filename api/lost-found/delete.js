@@ -18,14 +18,14 @@ export default async function handler(req, res) {
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!idToken) return res.status(401).json({ error: 'Missing auth token' });
 
+    // Initialize Firebase Admin first, then verify token
+    const db = getDb();
     const decoded = await getAuth().verifyIdToken(idToken);
     const callerEmail = decoded.email;
 
     // 2. Fetch the item
     const { id } = req.query;
     if (!id) return res.status(400).json({ error: 'Missing item id' });
-
-    const db = getDb();
     const docRef = db.collection('lost_found').doc(id);
     const doc = await docRef.get();
     if (!doc.exists) return res.status(404).json({ error: 'Item not found' });
