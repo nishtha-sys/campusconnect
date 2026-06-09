@@ -13,11 +13,6 @@ export async function reportItem(body) {
   return res.json();
 }
 
-export async function deleteNote(id) {
-  const res = await fetch(`${BASE}/notes/delete?id=${id}`, { method: 'DELETE' });
-  return res.json();
-}
-
 export async function getItems(type = '', category = '') {
   const params = new URLSearchParams();
   if (type) params.set('type', type);
@@ -28,6 +23,14 @@ export async function getItems(type = '', category = '') {
 
 export async function resolveItem(id) {
   const res = await fetch(`${BASE}/lost-found/resolve?id=${id}`, { method: 'PATCH' });
+  return res.json();
+}
+
+export async function deleteItem(id, idToken) {
+  const res = await fetch(`${BASE}/lost-found/delete?id=${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
   return res.json();
 }
 
@@ -57,4 +60,9 @@ export async function getAllNotes() {
 
 export async function countDownload(id) {
   await fetch(`${BASE}/notes/download?id=${id}`, { method: 'PATCH' });
+}
+
+export async function deleteNote(id) {
+  const res = await fetch(`${BASE}/notes/delete?id=${id}`, { method: 'DELETE' });
+  return res.json();
 }

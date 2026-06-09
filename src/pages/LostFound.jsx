@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { reportItem, getItems, resolveItem } from '../api';
+import { reportItem, getItems, resolveItem, deleteItem } from '../api';
+import { getAuth } from 'firebase/auth';
 
 const CATEGORIES = ['All', 'Electronics', 'Books & Notes', 'Clothing', 'ID & Cards', 'Keys', 'Bags', 'Other'];
 
@@ -19,9 +20,13 @@ function SkeletonCard() {
   );
 }
 
-function ItemCard({ item, user, onResolve }) {
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+
+function ItemCard({ item, user, onResolve, onDelete }) {
   const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.lost;
   const isOwn = item.contact === user.email;
+  const isAdmin = user.email === ADMIN_EMAIL;
+  const canDelete = isAdmin || isOwn;
 
   return (
     <div className="card group" style={item.status === 'resolved' ? { opacity: 0.45 } : {}}>
@@ -55,16 +60,27 @@ function ItemCard({ item, user, onResolve }) {
         </p>
       </div>
 
-      {/* Resolve button */}
-      {item.status === 'open' && isOwn && (
-        <button onClick={() => onResolve(item.id)}
-          className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
-          style={{ background: 'rgba(184,255,71,0.1)', color: '#b8ff47', border: '1px solid rgba(184,255,71,0.2)' }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(184,255,71,0.2)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'rgba(184,255,71,0.1)'}>
-          Mark as Resolved ✓
-        </button>
-      )}
+      {/* Action buttons */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {item.status === 'open' && isOwn && (
+          <button onClick={() => onResolve(item.id)}
+            className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+            style={{ background: 'rgba(184,255,71,0.1)', color: '#b8ff47', border: '1px solid rgba(184,255,71,0.2)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(184,255,71,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(184,255,71,0.1)'}>
+            Mark as Resolved ✓
+          </button>
+        )}
+        {canDelete && (
+          <button onClick={() => onDelete(item.id)}
+            className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+            style={{ background: 'rgba(255,60,60,0.08)', color: 'rgba(255,100,100,0.7)', border: '1px solid rgba(255,60,60,0.15)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,60,60,0.18)'; e.currentTarget.style.color = '#ff6464'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,60,60,0.08)'; e.currentTarget.style.color = 'rgba(255,100,100,0.7)'; }}>
+            🗑 Delete
+          </button>
+        )}
+      </div>
 
       {/* Timestamp */}
       <p className="text-white/20 text-xs font-mono mt-3">
@@ -112,6 +128,18 @@ export default function LostFound({ user }) {
   const handleResolve = async (id) => {
     await resolveItem(id);
     fetchItems();
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this item?')) return;
+    try {
+      const idToken = await getAuth().currentUser.getIdToken();
+      await deleteItem(id, idToken);
+      fetchItems();
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Could not delete item. Please try again.');
+    }
   };
 
   return (
@@ -232,7 +260,7 @@ export default function LostFound({ user }) {
           </div>
         ) : (
           items.map((item) => (
-            <ItemCard key={item.id} item={item} user={user} onResolve={handleResolve} />
+            <ItemCard key={item.id} item={item} user={user} onResolve={handleResolve} onDelete={handleDelete} />
           ))
         )}
       </div>
