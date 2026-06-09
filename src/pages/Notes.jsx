@@ -64,7 +64,9 @@ function NoteModal({ note, onClose }) {
   );
 }
 
-function NoteCard({ note, onView, onDelete, isOwn }) {
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+
+function NoteCard({ note, onView, onDelete, isAdmin }) {
   return (
     <div className="card group">
       <div className="flex items-start justify-between mb-3">
@@ -98,7 +100,7 @@ function NoteCard({ note, onView, onDelete, isOwn }) {
       <div className="flex items-center justify-between">
         <p className="text-white/30 text-xs">{note.uploader_name}</p>
         <div className="flex items-center gap-2">
-          {isOwn && (
+          {isAdmin && (
             <button
               onClick={() => onDelete(note.id)}
               className="text-xs font-display font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
@@ -169,8 +171,14 @@ export default function Notes({ user }) {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this note?')) return;
-    await deleteNote(id);
-    fetchNotes('');
+    try {
+      const idToken = await getAuth().currentUser.getIdToken();
+      await deleteNote(id, idToken);
+      fetchNotes('');
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Could not delete note. Please try again.');
+    }
   };
 
   return (
@@ -259,7 +267,7 @@ export default function Notes({ user }) {
           </div>
         ) : (
           notes.map((note) => (
-            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isOwn={note.uploader_name?.trim() === user.displayName?.trim()} />
+            <NoteCard key={note.id} note={note} onView={handleView} onDelete={handleDelete} isAdmin={user.email === ADMIN_EMAIL} />
           ))
         )}
       </div>

@@ -62,7 +62,10 @@ export async function countDownload(id) {
   await fetch(`${BASE}/notes/download?id=${id}`, { method: 'PATCH' });
 }
 
-export async function deleteNote(id) {
-  const res = await fetch(`${BASE}/notes/delete?id=${id}`, { method: 'DELETE' });
+export async function deleteNote(id, idToken) {
+  const res = await fetch(`${BASE}/notes/delete?id=${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
   return res.json();
 }
