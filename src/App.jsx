@@ -3,11 +3,13 @@ import { signOut } from 'firebase/auth';
 import { auth } from './firebase/config';
 import LostFound from './pages/LostFound';
 import Notes from './pages/Notes';
+import Admin from './pages/Admin';
 import Login from './pages/Login';
 
 export default function App() {
   const [page, setPage] = useState('lost-found');
   const [user, setUser] = useState(null);
+  const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -48,6 +50,16 @@ export default function App() {
             <span className="sm:hidden">📚</span>
             <span className="hidden sm:inline">📚 Notes</span>
           </button>
+          {user?.email === ADMIN_EMAIL && (
+            <button onClick={() => setPage('admin')}
+              className="px-4 py-2 rounded-lg text-sm font-display font-medium transition-all duration-200"
+              style={page === 'admin'
+                ? { background: 'rgba(184,255,71,0.15)', color: '#b8ff47' }
+                : { color: 'rgba(255,255,255,0.4)' }}>
+              <span className="sm:hidden">⚡</span>
+              <span className="hidden sm:inline">⚡ Admin</span>
+            </button>
+          )}
         </div>
 
         {/* User */}
@@ -71,6 +83,7 @@ export default function App() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         {page === 'lost-found' && <LostFound user={user} />}
         {page === 'notes' && <Notes user={user} />}
+        {page === 'admin' && user?.email === ADMIN_EMAIL && <Admin user={user} />}
       </main>
 
       {/* Footer */}

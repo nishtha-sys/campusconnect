@@ -34,6 +34,13 @@ export async function deleteItem(id, idToken) {
   return res.json();
 }
 
+export async function getAdminStats(idToken) {
+  const res = await fetch(`${BASE}/admin/stats`, {
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+  return res.json();
+}
+
 // ─── NOTES ─────────────────────────────────────────────────
 
 export async function uploadNote(body) {
